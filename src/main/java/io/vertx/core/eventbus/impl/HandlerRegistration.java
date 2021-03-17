@@ -61,11 +61,19 @@ public abstract class HandlerRegistration<T> implements Closeable {
 
   protected abstract void dispatch(Message<T> msg, ContextInternal context, Handler<Message<T>> handler);
 
+  /**
+   * 注册消息
+   * @param repliedAddress
+   * @param localOnly
+   * @param promise
+   */
   synchronized void register(String repliedAddress, boolean localOnly, Promise<Void> promise) {
     if (registered != null) {
       throw new IllegalStateException();
     }
+
     registered = bus.addRegistration(address, this, repliedAddress != null, localOnly, promise);
+
     if (bus.metrics != null) {
       metric = bus.metrics.handlerRegistered(address, repliedAddress);
     }
@@ -154,13 +162,17 @@ public abstract class HandlerRegistration<T> implements Closeable {
         }
         if (tracer != null && !src) {
           message.trace = tracer.receiveRequest(context, SpanKind.RPC, TracingPolicy.PROPAGATE, message, message.isSend() ? "send" : "publish", message.headers(), MessageTagExtractor.INSTANCE);
+
           HandlerRegistration.this.dispatch(message, context, handler);
+
           Object trace = message.trace;
           if (message.replyAddress == null && trace != null) {
             tracer.sendResponse(context, null, trace, null, TagExtractor.empty());
           }
         } else {
+
           HandlerRegistration.this.dispatch(message, context, handler);
+
         }
       }
     }

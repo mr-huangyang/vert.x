@@ -45,7 +45,12 @@ public class EventBusImpl implements EventBusInternal, MetricsProvider {
   private final AtomicLong replySequence = new AtomicLong(0);
   protected final VertxInternal vertx;
   protected final EventBusMetrics metrics;
+
+  /**
+   * 保存跟消息相关的handler
+   */
   protected final ConcurrentMap<String, ConcurrentCyclicSequence<HandlerHolder>> handlerMap = new ConcurrentHashMap<>();
+
   protected final CodecManager codecManager = new CodecManager();
   protected volatile boolean started;
 
@@ -149,6 +154,12 @@ public class EventBusImpl implements EventBusInternal, MetricsProvider {
     return this;
   }
 
+  /**
+   * 创建新的消费者实例
+   * @param address  the address that it will register it at
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> MessageConsumer<T> consumer(String address) {
     checkStarted();
@@ -235,6 +246,16 @@ public class EventBusImpl implements EventBusInternal, MetricsProvider {
     return msg;
   }
 
+  /**
+   * #oy-ebs-reg 注册消息
+   * @param address
+   * @param registration
+   * @param replyHandler
+   * @param localOnly
+   * @param promise
+   * @param <T>
+   * @return
+   */
   protected <T> HandlerHolder<T> addRegistration(String address, HandlerRegistration<T> registration, boolean replyHandler, boolean localOnly, Promise<Void> promise) {
     HandlerHolder<T> holder = addLocalRegistration(address, registration, replyHandler, localOnly);
     onLocalRegistration(holder, promise);
