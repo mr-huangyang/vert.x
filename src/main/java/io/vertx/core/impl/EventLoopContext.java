@@ -34,6 +34,11 @@ public class EventLoopContext extends ContextImpl {
     super(vertx, tracer, eventLoop, internalBlockingPool, workerPool, deployment, closeHooks, tccl);
   }
 
+  /**
+   * 将动作委托 netty 执行
+   * @param ctx
+   * @param action
+   */
   @Override
   void runOnContext(AbstractContext ctx, Handler<Void> action) {
     try {
@@ -43,6 +48,13 @@ public class EventLoopContext extends ContextImpl {
     }
   }
 
+  /**
+   * 委托 netty 执行 task,并计算执行时间
+   * @param ctx
+   * @param argument
+   * @param task
+   * @param <T>
+   */
   @Override
   <T> void emit(AbstractContext ctx, T argument, Handler<T> task) {
     EventLoop eventLoop = nettyEventLoop();

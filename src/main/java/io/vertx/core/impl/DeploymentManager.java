@@ -183,13 +183,19 @@ public class DeploymentManager {
     AtomicBoolean failureReported = new AtomicBoolean();
     for (Verticle verticle: verticles) {
       CloseHooks closeHooks = new CloseHooks(log);
+
       WorkerPool workerPool = poolName != null ? vertx.createSharedWorkerPool(poolName, options.getWorkerPoolSize(), options.getMaxWorkerExecuteTime(), options.getMaxWorkerExecuteTimeUnit()) : null;
+
       ContextImpl context = (ContextImpl) (options.isWorker() ? vertx.createWorkerContext(deployment, closeHooks, workerPool, tccl) :
         vertx.createEventLoopContext(deployment, closeHooks, workerPool, tccl));
+
       VerticleHolder holder = new VerticleHolder(verticle, context, workerPool, closeHooks);
       deployment.addVerticle(holder);
+
+      //初始化运行,运行在netty中
       context.runOnContext(v -> {
         try {
+          //#oy-vert-life
           verticle.init(vertx, context);
           Promise<Void> startPromise = context.promise();
           Future<Void> startFuture = startPromise.future();

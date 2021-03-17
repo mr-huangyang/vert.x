@@ -117,8 +117,11 @@ public class VertxImpl implements VertxInternal, MetricsProvider {
   private final VertxThreadFactory threadFactory;
   private final ExecutorServiceFactory executorServiceFactory;
   private final ThreadFactory eventLoopThreadFactory;
+
+  //netty event loop group
   private final EventLoopGroup eventLoopGroup;
   private final EventLoopGroup acceptorEventLoopGroup;
+
   private final BlockedThreadChecker checker;
   private final AddressResolver addressResolver;
   private final AddressResolverOptions addressResolverOptions;
@@ -464,6 +467,15 @@ public class VertxImpl implements VertxInternal, MetricsProvider {
     }
   }
 
+  /**
+   * #oy-verticle-loop
+   * 创建 verticle context,分配一个event loop
+   * @param deployment
+   * @param closeHooks
+   * @param workerPool
+   * @param tccl
+   * @return
+   */
   @Override
   public EventLoopContext createEventLoopContext(Deployment deployment, CloseHooks closeHooks, WorkerPool workerPool, ClassLoader tccl) {
     return new EventLoopContext(this, tracer, eventLoopGroup.next(), internalWorkerPool, workerPool != null ? workerPool : this.workerPool, deployment, closeHooks, tccl);
